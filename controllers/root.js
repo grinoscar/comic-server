@@ -1,4 +1,7 @@
+
+
 var DB = require('nosql');
+let nosql = DB.load('/home/glenn/src/comic-server/data/comics.nosql');
 
 const mockIndex = {
   comics: [
@@ -22,6 +25,25 @@ const mockIndex = {
   ]
 };
 
+
 exports.showAll = (req, res) => {
-  res.json(mockIndex);
+  const findAll = (builder) => {
+    builder.callback( (err, response) => {
+      const wrapper = {};
+      console.log('dataset', response);
+      wrapper.comics = response;
+      res.json(wrapper);
+    });
+  }
+    
+  nosql.refresh().find().make(findAll);
 };
+
+exports.initDB = (req, res) => {
+  mockIndex.comics.forEach((comic) => {
+    console.log('inserting ', comic);
+    nosql.insert(comic);
+  });
+  nosql.refresh();
+  res.status(202).send({});
+}
